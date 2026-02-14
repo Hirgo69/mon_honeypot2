@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Connexion</title>
+  <meta charset="UTF-8">
+  <title>Honeypot</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Courier New', monospace;
       background: url("https://images.unsplash.com/photo-1518770660439-4636190af475") no-repeat center center fixed;
       background-size: cover;
-      color: white;
+      color: #00ffcc;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,7 +17,7 @@
     }
 
     .container {
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       padding: 30px;
       border-radius: 10px;
       width: 300px;
@@ -30,6 +31,8 @@
       margin: 8px 0;
       border: none;
       border-radius: 5px;
+      background-color: #111;
+      color: #00ffcc;
     }
 
     button {
@@ -57,36 +60,102 @@
       background-color: #00ffcc;
       color: black;
     }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <div class="container">
+<div class="container" id="page">
+
+  <!-- Contenu dynamique injecté par JS -->
+
+</div>
+
+<script>
+const page = document.getElementById('page');
+
+// Fonction pour charger la page d'accueil
+function showHome() {
+  page.innerHTML = `
+    <h1>Bienvenue sur le Honeypot</h1>
+    <button class="login-btn" onclick="showLogin()">Se connecter</button>
+    <button class="register-btn" onclick="showRegister()">Créer un compte</button>
+  `;
+}
+
+// Fonction pour afficher le formulaire de connexion
+function showLogin() {
+  page.innerHTML = `
     <h1>Connexion</h1>
     <form id="loginForm">
       <input type="text" id="login" placeholder="Login" required>
       <input type="password" id="pass" placeholder="Password" required>
       <button type="submit" class="login-btn">Se connecter</button>
     </form>
+    <button class="register-btn" onclick="showRegister()">Créer un compte</button>
+    <button class="register-btn" onclick="showHome()">Accueil</button>
+  `;
 
-    <button class="register-btn" onclick="createAccount()">Créer un compte</button>
-  </div>
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    loginUser();
+  });
+}
 
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = {
-        login: document.getElementById('login').value,
-        pass: document.getElementById('pass').value
-      };
-      localStorage.setItem('honeypot', JSON.stringify(data));
-      alert('Connexion "réussie" !');
-    });
+// Fonction pour afficher le formulaire de création de compte
+function showRegister() {
+  page.innerHTML = `
+    <h1>Créer un compte</h1>
+    <button class="register-btn" onclick="registerUser()">Créer un compte</button>
+    <button class="login-btn" onclick="showLogin()">Se connecter</button>
+    <button class="register-btn" onclick="showHome()">Accueil</button>
+  `;
+}
 
-    function createAccount() {
-      alert("Fonction de création de compte bientôt disponible 😉");
-    }
-  </script>
+// Fonction création de compte
+function registerUser() {
+  const login = prompt("Choisis un login :");
+  const pass = prompt("Choisis un mot de passe :");
+  
+  if (!login || !pass) {
+    alert("Login et mot de passe obligatoires !");
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  if (users[login]) {
+    alert("Ce login existe déjà !");
+    return;
+  }
+
+  users[login] = pass;
+  localStorage.setItem('users', JSON.stringify(users));
+  alert("Compte créé avec succès !");
+}
+
+// Fonction connexion
+function loginUser() {
+  const login = document.getElementById('login').value;
+  const pass = document.getElementById('pass').value;
+
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+  if (users[login] && users[login] === pass) {
+    alert(`Connexion réussie ! Bienvenue ${login}`);
+    localStorage.setItem('lastLogin', login);
+  } else {
+    alert("Login ou mot de passe incorrect !");
+  }
+}
+
+// Affiche la page d'accueil au lancement
+showHome();
+</script>
 
 </body>
 </html>
