@@ -20,7 +20,7 @@
       background: rgba(0, 0, 0, 0.9);
       padding: 30px;
       border-radius: 10px;
-      width: 300px;
+      width: 350px;
       text-align: center;
       box-shadow: 0 0 20px #00ffcc;
     }
@@ -65,21 +65,22 @@
       margin-bottom: 20px;
     }
 
-    .hidden { display: none; }
+    .message {
+      margin-top: 10px;
+      color: #ff5555;
+      font-weight: bold;
+    }
+
   </style>
 </head>
 <body>
 
-<div class="container" id="page">
-
-  <!-- Contenu dynamique injecté par JS -->
-
-</div>
+<div class="container" id="page"></div>
 
 <script>
 const page = document.getElementById('page');
 
-// Fonction pour charger la page d'accueil
+// PAGE D'ACCUEIL
 function showHome() {
   page.innerHTML = `
     <h1>Bienvenue sur le Honeypot</h1>
@@ -88,7 +89,7 @@ function showHome() {
   `;
 }
 
-// Fonction pour afficher le formulaire de connexion
+// PAGE CONNEXION
 function showLogin() {
   page.innerHTML = `
     <h1>Connexion</h1>
@@ -99,6 +100,7 @@ function showLogin() {
     </form>
     <button class="register-btn" onclick="showRegister()">Créer un compte</button>
     <button class="register-btn" onclick="showHome()">Accueil</button>
+    <div class="message" id="loginMessage"></div>
   `;
 
   document.getElementById('loginForm').addEventListener('submit', e => {
@@ -107,54 +109,87 @@ function showLogin() {
   });
 }
 
-// Fonction pour afficher le formulaire de création de compte
+// PAGE CREATION COMPTE
 function showRegister() {
   page.innerHTML = `
     <h1>Créer un compte</h1>
-    <button class="register-btn" onclick="registerUser()">Créer un compte</button>
+    <form id="registerForm">
+      <input type="text" id="regLogin" placeholder="Login" required>
+      <input type="password" id="regPass" placeholder="Password" required>
+      <button type="submit" class="register-btn">Créer un compte</button>
+    </form>
     <button class="login-btn" onclick="showLogin()">Se connecter</button>
     <button class="register-btn" onclick="showHome()">Accueil</button>
+    <div class="message" id="registerMessage"></div>
+  `;
+
+  document.getElementById('registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    registerUser();
+  });
+}
+
+// PAGE BIENVENUE APRES CONNEXION
+function showWelcome(user) {
+  page.innerHTML = `
+    <h1>Bienvenue, ${user} !</h1>
+    <p>Tu es maintenant connecté sur ton honeypot simulé 😎</p>
+    <button class="register-btn" onclick="logout()">Se déconnecter</button>
   `;
 }
 
-// Fonction création de compte
+// CREATION COMPTE
 function registerUser() {
-  const login = prompt("Choisis un login :");
-  const pass = prompt("Choisis un mot de passe :");
-  
+  const login = document.getElementById('regLogin').value.trim();
+  const pass = document.getElementById('regPass').value.trim();
+  const message = document.getElementById('registerMessage');
+
   if (!login || !pass) {
-    alert("Login et mot de passe obligatoires !");
+    message.textContent = "Login et mot de passe obligatoires !";
     return;
   }
 
   const users = JSON.parse(localStorage.getItem('users') || '{}');
   if (users[login]) {
-    alert("Ce login existe déjà !");
+    message.textContent = "Ce login existe déjà !";
     return;
   }
 
   users[login] = pass;
   localStorage.setItem('users', JSON.stringify(users));
-  alert("Compte créé avec succès !");
+  message.style.color = "#00ffcc";
+  message.textContent = "Compte créé avec succès !";
 }
 
-// Fonction connexion
+// CONNEXION
 function loginUser() {
-  const login = document.getElementById('login').value;
-  const pass = document.getElementById('pass').value;
+  const login = document.getElementById('login').value.trim();
+  const pass = document.getElementById('pass').value.trim();
+  const message = document.getElementById('loginMessage');
 
   const users = JSON.parse(localStorage.getItem('users') || '{}');
 
   if (users[login] && users[login] === pass) {
-    alert(`Connexion réussie ! Bienvenue ${login}`);
     localStorage.setItem('lastLogin', login);
+    showWelcome(login);
   } else {
-    alert("Login ou mot de passe incorrect !");
+    message.textContent = "Login ou mot de passe incorrect !";
   }
 }
 
-// Affiche la page d'accueil au lancement
-showHome();
+// DECONNEXION
+function logout() {
+  localStorage.removeItem('lastLogin');
+  showHome();
+}
+
+// Au lancement, vérifier si l'utilisateur était déjà connecté
+const lastUser = localStorage.getItem('lastLogin');
+if (lastUser) {
+  showWelcome(lastUser);
+} else {
+  showHome();
+}
 </script>
 
 </body>
